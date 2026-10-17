@@ -7,10 +7,10 @@ import type { Card } from "@/lib/board";
 export function CardBody({ card, lifted }: { card: Card; lifted?: boolean }) {
   return (
     <div
-      className={`rounded-xl border bg-white p-4 ${
+      className={`rounded-xl border border-l-4 bg-white p-4 transition duration-200 ${
         lifted
-          ? "rotate-2 cursor-grabbing border-primary/30 shadow-xl shadow-navy/20"
-          : "border-navy/5 shadow-sm shadow-navy/5 group-hover:border-primary/40"
+          ? "rotate-2 scale-[1.02] cursor-grabbing border-secondary/20 border-l-accent shadow-2xl shadow-secondary/30 ring-2 ring-accent"
+          : "border-secondary/10 border-l-transparent shadow-sm shadow-secondary/5 group-hover:-translate-y-0.5 group-hover:border-l-accent group-hover:shadow-md group-hover:shadow-secondary/15"
       }`}
     >
       <h3 className="pr-6 text-[15px] leading-snug font-semibold text-navy">{card.title}</h3>
@@ -25,11 +25,11 @@ export default function SortableCard({ card, onDelete }: { card: Card; onDelete:
     <li
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={`group relative rounded-xl ${isDragging ? "outline-2 outline-dashed outline-primary/50 *:invisible" : ""}`}
+      className={`group relative rounded-xl ${isDragging ? "bg-secondary/5 outline-2 outline-dashed outline-secondary/40 *:invisible" : ""}`}
       data-testid="card"
     >
       <div
-        className="cursor-grab touch-none rounded-xl focus-visible:outline-2 focus-visible:outline-primary"
+        className="cursor-grab touch-none rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
         {...attributes}
         {...listeners}
       >

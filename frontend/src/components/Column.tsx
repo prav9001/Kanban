@@ -37,9 +37,9 @@ export default function ColumnView({ column, onRename, onAdd, onDelete }: Props)
     <section
       aria-label={column.title}
       data-testid="column"
-      className="flex min-w-56 flex-1 flex-col overflow-hidden rounded-2xl bg-white/60 ring-1 ring-navy/5"
+      className="flex min-w-56 flex-1 flex-col overflow-hidden rounded-2xl bg-[#f2ebf7] shadow-sm shadow-secondary/5 ring-1 ring-secondary/10"
     >
-      <div className="h-[3px] bg-accent" />
+      <div className="h-1 bg-accent" />
       <div className="flex items-center justify-between gap-2 px-4 pt-4 pb-3">
         {editing ? (
           <input
@@ -51,26 +51,26 @@ export default function ColumnView({ column, onRename, onAdd, onDelete }: Props)
               if (e.key === "Enter") saveTitle(e.currentTarget.value);
               if (e.key === "Escape") setEditing(false);
             }}
-            className="font-display w-full rounded-md border border-primary bg-white px-2 py-0.5 text-lg font-semibold text-navy outline-none"
+            className="font-display w-full rounded-md border border-secondary bg-white px-2 py-0.5 text-lg font-semibold text-navy ring-3 ring-secondary/15 outline-none"
           />
         ) : (
           <button
             type="button"
             onClick={() => setEditing(true)}
             title="Rename column"
-            className="font-display rounded-md px-2 py-0.5 -ml-2 text-left text-lg font-semibold text-navy hover:bg-navy/5"
+            className="font-display rounded-md px-2 py-0.5 -ml-2 text-left text-lg font-semibold text-navy transition hover:bg-accent/20"
           >
             {column.title}
           </button>
         )}
-        <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
+        <span className="min-w-6 rounded-full bg-accent px-2 py-0.5 text-center text-xs font-bold text-navy">
           {column.cards.length}
         </span>
       </div>
 
       <div
         ref={setNodeRef}
-        className={`mx-1.5 mb-1.5 flex-1 overflow-y-auto rounded-xl px-1.5 pt-0.5 transition-colors ${isOver ? "bg-primary/5" : ""}`}
+        className={`mx-1.5 mb-1.5 flex-1 overflow-y-auto rounded-xl px-1.5 pt-0.5 transition-colors ${isOver ? "bg-accent/10" : ""}`}
       >
         <SortableContext items={column.cards.map((c) => c.id)} strategy={verticalListSortingStrategy}>
           <ul className="flex flex-col gap-2.5">
@@ -78,7 +78,7 @@ export default function ColumnView({ column, onRename, onAdd, onDelete }: Props)
               <SortableCard key={card.id} card={card} onDelete={() => onDelete(card.id)} />
             ))}
             {column.cards.length === 0 && (
-              <li className="rounded-xl border border-dashed border-navy/15 px-4 py-6 text-center text-sm text-muted">
+              <li className="rounded-xl border-2 border-dashed border-secondary/20 px-4 py-6 text-center text-sm text-muted">
                 Drop a card here
               </li>
             )}
@@ -87,14 +87,14 @@ export default function ColumnView({ column, onRename, onAdd, onDelete }: Props)
 
         <div className="py-2.5">
           {adding ? (
-            <form onSubmit={submit} className="space-y-2 rounded-xl bg-white p-3 shadow-sm shadow-navy/5">
+            <form onSubmit={submit} className="space-y-2 rounded-xl border border-secondary/15 bg-white p-3 shadow-md shadow-secondary/10">
               <input
                 autoFocus
                 aria-label="Card title"
                 placeholder="Card title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full rounded-md border border-navy/10 px-2.5 py-1.5 text-sm outline-none focus:border-primary"
+                className="w-full rounded-md border border-navy/10 px-2.5 py-1.5 text-sm outline-none transition focus:border-secondary focus:ring-3 focus:ring-secondary/15"
               />
               <textarea
                 aria-label="Card details"
@@ -102,13 +102,13 @@ export default function ColumnView({ column, onRename, onAdd, onDelete }: Props)
                 rows={3}
                 value={details}
                 onChange={(e) => setDetails(e.target.value)}
-                className="w-full resize-none rounded-md border border-navy/10 px-2.5 py-1.5 text-sm outline-none focus:border-primary"
+                className="w-full resize-none rounded-md border border-navy/10 px-2.5 py-1.5 text-sm outline-none transition focus:border-secondary focus:ring-3 focus:ring-secondary/15"
               />
               <div className="flex gap-2">
                 <button
                   type="submit"
                   disabled={!title.trim()}
-                  className="rounded-lg bg-secondary px-3 py-1.5 text-sm font-semibold text-white hover:bg-secondary/90 disabled:opacity-40"
+                  className="rounded-lg bg-secondary px-3.5 py-1.5 text-sm font-semibold text-white shadow-sm shadow-secondary/30 transition hover:bg-[#62307a] disabled:opacity-40 disabled:shadow-none"
                 >
                   Add card
                 </button>
@@ -125,7 +125,7 @@ export default function ColumnView({ column, onRename, onAdd, onDelete }: Props)
             <button
               type="button"
               onClick={() => setAdding(true)}
-              className="w-full rounded-xl px-3 py-2 text-left text-sm font-medium text-muted hover:bg-white hover:text-secondary"
+              className="w-full rounded-xl border border-dashed border-secondary/25 px-3 py-2 text-left text-sm font-semibold text-secondary transition hover:border-secondary/50 hover:bg-white"
             >
               + Add card
             </button>

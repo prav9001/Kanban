@@ -32,6 +32,7 @@ export default function Board() {
 
   const activeCard = columns.flatMap((c) => c.cards).find((c) => c.id === activeId);
   const total = columns.reduce((n, c) => n + c.cards.length, 0);
+  const done = columns.at(-1)!.cards.length;
 
   function handleDragStart({ active }: DragStartEvent) {
     setActiveId(String(active.id));
@@ -55,14 +56,24 @@ export default function Board() {
 
   return (
     <main className="flex h-dvh flex-col">
-      <header className="px-6 pt-8 pb-6 sm:px-8">
-        <p className="text-sm text-muted">Website relaunch</p>
-        <h1 className="font-display mt-1 text-3xl font-bold tracking-tight text-navy sm:text-4xl">
-          Launch board
-        </h1>
-        <div className="mt-4 flex items-center gap-3 text-sm text-muted">
-          <span className="h-1 w-12 rounded-full bg-accent" />
-          {total} cards across {columns.length} stages
+      <header className="border-b-4 border-accent bg-secondary px-6 pt-8 pb-7 text-white sm:px-8">
+        <p className="text-sm font-medium text-accent">Website relaunch</p>
+        <div className="mt-1 flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
+          <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">Launch board</h1>
+          <div className="w-full max-w-xs">
+            <div className="flex justify-between text-sm text-white/75">
+              <span>
+                {total} cards across {columns.length} stages
+              </span>
+              <span className="font-semibold text-white">{done} done</span>
+            </div>
+            <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/15">
+              <div
+                className="h-full rounded-full bg-accent transition-[width] duration-500"
+                style={{ width: `${total ? (done / total) * 100 : 0}%` }}
+              />
+            </div>
+          </div>
         </div>
       </header>
 
@@ -75,7 +86,7 @@ export default function Board() {
         onDragEnd={handleDragEnd}
         onDragCancel={() => setActiveId(null)}
       >
-        <div className="flex flex-1 gap-3 overflow-x-auto px-6 pb-8 sm:px-8">
+        <div className="flex flex-1 gap-3 overflow-x-auto px-6 pt-6 pb-8 sm:px-8">
           {columns.map((column) => (
             <ColumnView
               key={column.id}
@@ -86,7 +97,7 @@ export default function Board() {
             />
           ))}
         </div>
-        <DragOverlay>{activeCard && <CardBody card={activeCard} lifted />}</DragOverlay>
+        <DragOverlay dropAnimation={{ duration: 220, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" }}>{activeCard && <CardBody card={activeCard} lifted />}</DragOverlay>
       </DndContext>
     </main>
   );
