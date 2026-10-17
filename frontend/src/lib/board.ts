@@ -70,8 +70,11 @@ export function moveCard(columns: Column[], cardId: string, toColumnId: string, 
 const STORAGE_KEY = "kanban-board";
 
 export function loadColumns(): Column[] {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  return saved ? JSON.parse(saved) : initialColumns;
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)!) ?? initialColumns;
+  } catch {
+    return initialColumns;
+  }
 }
 
 export function saveColumns(columns: Column[]) {

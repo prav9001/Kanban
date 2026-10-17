@@ -13,8 +13,8 @@ export function CardBody({ card, lifted }: { card: Card; lifted?: boolean }) {
           : "border-secondary/10 border-l-transparent shadow-sm shadow-secondary/5 group-hover:-translate-y-0.5 group-hover:border-l-accent group-hover:shadow-md group-hover:shadow-secondary/15"
       }`}
     >
-      <h3 className="pr-6 text-[15px] leading-snug font-semibold text-navy">{card.title}</h3>
-      {card.details && <p className="mt-1.5 text-sm leading-relaxed text-muted">{card.details}</p>}
+      <h3 className="pr-6 text-[15px] wrap-anywhere leading-snug font-semibold text-navy">{card.title}</h3>
+      {card.details && <p className="mt-1.5 text-sm wrap-anywhere whitespace-pre-line leading-relaxed text-muted">{card.details}</p>}
     </div>
   );
 }

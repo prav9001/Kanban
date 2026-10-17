@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -11,7 +11,9 @@ import {
   useSensors,
   type DragEndEvent,
   type DragOverEvent,
+  type Announcements,
   type DragStartEvent,
+  type UniqueIdentifier,
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { addCard, deleteCard, findColumn, loadColumns, moveCard, renameColumn, saveColumns, type Column } from "@/lib/board";
@@ -25,6 +27,7 @@ function targetIndex(column: Column, overId: string) {
 export default function Board() {
   const [columns, setColumns] = useState(loadColumns);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const beforeDrag = useRef(columns);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -32,13 +35,34 @@ export default function Board() {
 
   useEffect(() => saveColumns(columns), [columns]);
 
-  const activeCard = columns.flatMap((c) => c.cards).find((c) => c.id === activeId);
-  const total = columns.reduce((n, c) => n + c.cards.length, 0);
+  const cards = columns.flatMap((c) => c.cards);
+  const activeCard = cards.find((c) => c.id === activeId);
+  const total = cards.length;
   const done = columns.at(-1)!.cards.length;
 
   function handleDragStart({ active }: DragStartEvent) {
+    beforeDrag.current = columns;
     setActiveId(String(active.id));
   }
+
+  function handleDragCancel() {
+    setColumns(beforeDrag.current);
+    setActiveId(null);
+  }
+
+  const titleOf = (id: UniqueIdentifier) => cards.find((c) => c.id === id)?.title;
+  const columnOf = (id: UniqueIdentifier) => findColumn(columns, String(id))!.title;
+
+  const announcements: Announcements = {
+    onDragStart: ({ active }) => `Picked up ${titleOf(active.id)}.`,
+    onDragOver: ({ active, over }) => {
+      if (!over) return;
+      const near = over.id !== active.id && titleOf(over.id);
+      return `${titleOf(active.id)} is ${near ? `over ${near} ` : ""}in ${columnOf(over.id)}.`;
+    },
+    onDragEnd: ({ active, over }) => (over ? `${titleOf(active.id)} was dropped in ${columnOf(over.id)}.` : undefined),
+    onDragCancel: ({ active }) => `${titleOf(active.id)} was returned to its place.`,
+  };
 
   function handleDragOver({ active, over }: DragOverEvent) {
     if (!over) return;
@@ -86,7 +110,8 @@ export default function Board() {
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
-        onDragCancel={() => setActiveId(null)}
+        onDragCancel={handleDragCancel}
+        accessibility={{ announcements }}
       >
         <div className="flex flex-1 gap-3 overflow-x-auto px-6 pt-6 pb-8 sm:px-8">
           {columns.map((column) => (

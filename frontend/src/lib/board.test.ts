@@ -71,4 +71,9 @@ describe("loadColumns / saveColumns", () => {
     saveColumns(cols);
     expect(loadColumns()).toEqual(cols);
   });
+
+  it("falls back to the dummy board when saved data is corrupt", () => {
+    localStorage.setItem("kanban-board", "{bad");
+    expect(loadColumns()).toEqual(initialColumns);
+  });
 });

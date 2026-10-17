@@ -88,11 +88,39 @@ test("moves a card with the keyboard", async ({ page }) => {
   const live = page.locator("[aria-live]").first();
   await page.getByRole("button", { name: /^Kickoff meeting/ }).focus();
   await page.keyboard.press("Space");
-  await expect(live).toContainText("over droppable area card-9");
+  await expect(live).toContainText("Kickoff meeting is in Done.");
   await page.keyboard.press("ArrowDown");
-  await expect(live).toContainText("over droppable area card-10");
+  await expect(live).toContainText("Kickoff meeting is over Domain renewal in Done.");
   await page.keyboard.press("Space");
+  await expect(live).toContainText("Kickoff meeting was dropped in Done.");
   await expect(column(page, "Done").getByTestId("card").last()).toContainText("Kickoff meeting");
+});
+
+test("cancelling a drag with Escape puts the card back", async ({ page }) => {
+  const from = (await card(page, "Write homepage copy").boundingBox())!;
+  const to = (await card(page, "Brand color update").boundingBox())!;
+  await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(from.x + from.width / 2 + 10, from.y + from.height / 2 + 10, { steps: 5 });
+  await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 20 });
+  await expect(column(page, "Review")).toContainText("Write homepage copy");
+  await page.keyboard.press("Escape");
+  await page.mouse.up();
+  await expect(column(page, "To do")).toContainText("Write homepage copy");
+  await expect(column(page, "Review").getByTestId("card")).toHaveCount(1);
+  await expect(page.locator("[aria-live]").first()).toContainText("Write homepage copy was returned to its place.");
+});
+
+test("wraps long titles and keeps line breaks in details", async ({ page }) => {
+  const backlog = column(page, "Backlog");
+  await backlog.getByRole("button", { name: "+ Add card" }).click();
+  await backlog.getByLabel("Card title").fill("https://example.com/" + "x".repeat(80));
+  await backlog.getByLabel("Card details").fill("First line\nSecond line");
+  await backlog.getByRole("button", { name: "Add card", exact: true }).click();
+  const added = card(page, "First line");
+  const title = added.locator("h3");
+  expect(await title.evaluate((e) => e.scrollWidth <= e.clientWidth)).toBe(true);
+  expect(await added.locator("p").innerText()).toBe("First line\nSecond line");
 });
 
 test("lays out without horizontal scroll on a laptop screen", async ({ page }) => {
