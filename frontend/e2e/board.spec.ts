@@ -100,3 +100,24 @@ test("lays out without horizontal scroll on a laptop screen", async ({ page }) =
   const doneBox = (await column(page, "Done").boundingBox())!;
   expect(doneBox.x + doneBox.width).toBeLessThanOrEqual(1280 - 24);
 });
+
+test("keeps changes after a reload", async ({ page }) => {
+  await drag(page, card(page, "Write homepage copy"), card(page, "Brand color update"));
+  await page.getByRole("button", { name: "Backlog" }).click();
+  await page.getByLabel("Column name").fill("Ideas");
+  await page.getByLabel("Column name").press("Enter");
+  await card(page, "Domain renewal").hover();
+  await page.getByRole("button", { name: "Delete Domain renewal" }).click();
+  const todo = column(page, "To do");
+  await todo.getByRole("button", { name: "+ Add card" }).click();
+  await todo.getByLabel("Card title").fill("Saved card");
+  await todo.getByRole("button", { name: "Add card", exact: true }).click();
+
+  await page.reload();
+
+  await expect(column(page, "Ideas")).toBeVisible();
+  await expect(column(page, "Review")).toContainText("Write homepage copy");
+  await expect(card(page, "Domain renewal")).toHaveCount(0);
+  await expect(todo).toContainText("Saved card");
+  await expect(page.getByTestId("card")).toHaveCount(10);
+});

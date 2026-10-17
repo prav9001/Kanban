@@ -16,7 +16,7 @@
 
 - Implemented as a modern NextJS app, client rendered
 - The NextJS app should be created in a subdirectory `frontend`
-- No persistence
+- Board state saved in browser local storage after every change
 - No user management for the MVP
 - Use popular libraries
 - As simple as possible but with an elegant UI

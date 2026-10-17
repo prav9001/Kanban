@@ -67,4 +67,17 @@ describe("Board", () => {
     expect(screen.queryByText("Brand color update")).not.toBeInTheDocument();
     expect(within(column("Review")).getByText("Drop a card here")).toBeInTheDocument();
   });
+
+  it("saves changes and restores them on the next render", async () => {
+    const user = userEvent.setup();
+    const { unmount } = render(<Board />);
+    await user.click(screen.getByRole("button", { name: "Delete Domain renewal" }));
+    await user.click(screen.getByRole("button", { name: "Done" }));
+    await user.clear(screen.getByLabelText("Column name"));
+    await user.type(screen.getByLabelText("Column name"), "Shipped{Enter}");
+    unmount();
+    render(<Board />);
+    expect(column("Shipped")).toBeInTheDocument();
+    expect(screen.queryByText("Domain renewal")).not.toBeInTheDocument();
+  });
 });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addCard, deleteCard, findColumn, initialColumns, moveCard, renameColumn } from "./board";
+import { addCard, deleteCard, findColumn, initialColumns, loadColumns, moveCard, renameColumn, saveColumns } from "./board";
 
 const ids = (cols = initialColumns, i = 0) => cols[i].cards.map((c) => c.id);
 
@@ -58,5 +58,17 @@ describe("moveCard", () => {
   it("moves into an empty column", () => {
     const empty = initialColumns.map((c) => (c.id === "col-review" ? { ...c, cards: [] } : c));
     expect(ids(moveCard(empty, "card-9", "col-review", 0), 3)).toEqual(["card-9"]);
+  });
+});
+
+describe("loadColumns / saveColumns", () => {
+  it("returns the dummy board when nothing is saved", () => {
+    expect(loadColumns()).toEqual(initialColumns);
+  });
+
+  it("returns the saved board", () => {
+    const cols = renameColumn(initialColumns, "col-done", "Shipped");
+    saveColumns(cols);
+    expect(loadColumns()).toEqual(cols);
   });
 });

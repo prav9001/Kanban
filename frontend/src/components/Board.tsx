@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -14,7 +14,7 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
-import { addCard, deleteCard, findColumn, initialColumns, moveCard, renameColumn, type Column } from "@/lib/board";
+import { addCard, deleteCard, findColumn, loadColumns, moveCard, renameColumn, saveColumns, type Column } from "@/lib/board";
 import ColumnView from "./Column";
 import { CardBody } from "./Card";
 
@@ -23,12 +23,14 @@ function targetIndex(column: Column, overId: string) {
 }
 
 export default function Board() {
-  const [columns, setColumns] = useState(initialColumns);
+  const [columns, setColumns] = useState(loadColumns);
   const [activeId, setActiveId] = useState<string | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
+
+  useEffect(() => saveColumns(columns), [columns]);
 
   const activeCard = columns.flatMap((c) => c.cards).find((c) => c.id === activeId);
   const total = columns.reduce((n, c) => n + c.cards.length, 0);

@@ -66,3 +66,14 @@ export function moveCard(columns: Column[], cardId: string, toColumnId: string, 
     return { ...c, cards };
   });
 }
+
+const STORAGE_KEY = "kanban-board";
+
+export function loadColumns(): Column[] {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  return saved ? JSON.parse(saved) : initialColumns;
+}
+
+export function saveColumns(columns: Column[]) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(columns));
+}

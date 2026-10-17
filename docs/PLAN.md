@@ -9,7 +9,8 @@
 
 ## Phase 2: Board state (pure logic)
 - [x] Board model: 5 fixed columns, cards with id, title, details
-- [x] Dummy data seeded on load
+- [x] Dummy data seeded on first load
+- [x] Board saved to local storage after every change and restored on reload
 - [x] Pure functions: renameColumn, addCard, deleteCard, moveCard
 - [x] Unit tests cover every function, including moves within and across columns
 
@@ -25,6 +26,7 @@
 ## Phase 4: Integration testing
 - [x] Playwright: loads with dummy data and 5 columns
 - [x] Playwright: rename, add, delete, drag across columns, drag to empty column
+- [x] Playwright: changes survive a page reload
 - [x] All defects found are fixed; unit and e2e suites green
 
 ## Phase 5: Delivery

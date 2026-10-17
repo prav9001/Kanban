@@ -1,6 +1,6 @@
 # Kanban
 
-A single-board Kanban app built with Next.js, Tailwind CSS and dnd-kit. Five renamable columns, cards with a title and details, drag and drop between columns. No persistence: the board resets to sample data on reload.
+A single-board Kanban app built with Next.js, Tailwind CSS and dnd-kit. Five renamable columns, cards with a title and details, drag and drop between columns. Changes are saved in your browser (local storage) and restored on reload.
 
 ## Run
 
