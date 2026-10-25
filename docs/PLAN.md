@@ -1,4 +1,6 @@
-# Kanban MVP Plan
+# Kanban Plan
+
+Phases 1-5 built the single-board MVP. Phase 6 onward grows it into a multi-user project management app.
 
 ## Phase 1: Scaffolding
 - [x] Next.js (latest, App Router, TypeScript, Tailwind) created in `frontend/`
@@ -31,5 +33,23 @@
 
 ## Phase 5: Delivery
 - [x] Minimal README with run/test commands
-- [ ] Committed and pushed to the user's GitHub repo
-- [ ] Dev server running
+- [x] Committed to the user's repo
+
+## Phase 6: Users and multiple boards
+- [x] SQLite storage (node:sqlite) with users, sessions and boards tables
+- [x] Sign up, sign in, sign out; scrypt password hashing; httpOnly session cookie
+- [x] Proxy redirects signed-out visitors to /login; API returns 401 without a session
+- [x] Boards list: create, rename, delete (with confirmation); card counts and last updated
+- [x] Each new account gets a sample board; each user only sees their own boards
+- [x] Board page loads from and saves to the API, in order, with a save status
+- [x] Account page: change name, change password (signs out other sessions), delete account
+- [x] API integration tests for every route, including cross-user access
+- [x] Component tests for every page; Playwright for auth, boards, account and board flows
+
+## Roadmap (next phases, each with unit, API and e2e tests)
+- [ ] Card detail dialog: edit title and details in place
+- [ ] Card priority, due date and labels, shown on the card
+- [ ] Add, delete and reorder columns
+- [ ] Search and filter cards on a board
+- [ ] Share a board with other users by email (owner and member roles)
+- [ ] Card comments and activity history

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -16,7 +16,10 @@ import {
   type UniqueIdentifier,
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
-import { addCard, deleteCard, findColumn, loadColumns, moveCard, renameColumn, saveColumns, type Column } from "@/lib/board";
+import { useSWRConfig } from "swr";
+import { api } from "@/lib/api";
+import { addCard, deleteCard, findColumn, moveCard, renameColumn, type Board as BoardData, type Column } from "@/lib/board";
+import AppHeader from "./AppHeader";
 import ColumnView from "./Column";
 import { CardBody } from "./Card";
 
@@ -24,16 +27,55 @@ function targetIndex(column: Column, overId: string) {
   return column.id === overId ? column.cards.length : column.cards.findIndex((c) => c.id === overId);
 }
 
-export default function Board() {
-  const [columns, setColumns] = useState(loadColumns);
+type SaveState = "saved" | "saving" | "error";
+
+const saveLabels: Record<SaveState, string> = { saved: "All changes saved", saving: "Saving...", error: "Could not save changes" };
+
+export default function Board({ board }: { board: BoardData }) {
+  const { mutate } = useSWRConfig();
+  const [name, setName] = useState(board.name);
+  const [renaming, setRenaming] = useState(false);
+  const [columns, setColumns] = useState(board.columns);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [saveState, setSaveState] = useState<SaveState>("saved");
   const beforeDrag = useRef(columns);
+  const queue = useRef(Promise.resolve());
+  const pending = useRef(0);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
-  useEffect(() => saveColumns(columns), [columns]);
+  // Saves run one at a time so the server always ends up with the latest change.
+  function save(changes: Partial<Pick<BoardData, "name" | "columns">>) {
+    const url = `/api/boards/${board.id}`;
+    pending.current++;
+    setSaveState("saving");
+    queue.current = queue.current
+      .then(() => api<BoardData>(url, { method: "PATCH", body: changes }))
+      .then(
+        (updated) => {
+          mutate(url, updated, { revalidate: false });
+          if (--pending.current === 0) setSaveState("saved");
+        },
+        () => {
+          pending.current--;
+          setSaveState("error");
+        },
+      );
+  }
+
+  function update(next: Column[]) {
+    setColumns(next);
+    save({ columns: next });
+  }
+
+  function rename(value: string) {
+    setRenaming(false);
+    if (!value.trim() || value.trim() === name) return;
+    setName(value.trim());
+    save({ name: value.trim() });
+  }
 
   const cards = columns.flatMap((c) => c.cards);
   const activeCard = cards.find((c) => c.id === activeId);
@@ -74,18 +116,44 @@ export default function Board() {
 
   function handleDragEnd({ active, over }: DragEndEvent) {
     setActiveId(null);
-    if (!over) return;
-    const to = findColumn(columns, String(over.id));
-    if (!to) return;
-    setColumns(moveCard(columns, String(active.id), to.id, targetIndex(to, String(over.id))));
+    const to = over && findColumn(columns, String(over.id));
+    if (!to) return handleDragCancel();
+    update(moveCard(columns, String(active.id), to.id, targetIndex(to, String(over.id))));
   }
 
   return (
     <main className="flex h-dvh flex-col">
-      <header className="border-b-4 border-accent bg-secondary px-6 pt-8 pb-7 text-white sm:px-8">
-        <p className="text-sm font-medium text-accent">Website relaunch</p>
-        <div className="mt-1 flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
-          <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">Launch board</h1>
+      <AppHeader back>
+        <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
+          <div className="min-w-0">
+            {renaming ? (
+              <input
+                autoFocus
+                aria-label="Board name"
+                defaultValue={name}
+                onBlur={(e) => rename(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") rename(e.currentTarget.value);
+                  if (e.key === "Escape") setRenaming(false);
+                }}
+                className="font-display w-full max-w-xl rounded-lg bg-white/10 px-2 py-0.5 text-3xl font-bold tracking-tight text-white ring-2 ring-accent outline-none sm:text-4xl"
+              />
+            ) : (
+              <h1 className="font-display text-3xl font-bold tracking-tight wrap-anywhere sm:text-4xl">
+                <button
+                  type="button"
+                  onClick={() => setRenaming(true)}
+                  title="Rename board"
+                  className="-ml-2 rounded-lg px-2 py-0.5 text-left hover:bg-white/10"
+                >
+                  {name}
+                </button>
+              </h1>
+            )}
+            <p role="status" className={`mt-1 text-xs ${saveState === "error" ? "font-semibold text-accent" : "text-white/60"}`}>
+              {saveLabels[saveState]}
+            </p>
+          </div>
           <div className="w-full max-w-xs">
             <div className="flex justify-between text-sm text-white/75">
               <span>
@@ -101,7 +169,7 @@ export default function Board() {
             </div>
           </div>
         </div>
-      </header>
+      </AppHeader>
 
       <DndContext
         id="board"
@@ -118,9 +186,9 @@ export default function Board() {
             <ColumnView
               key={column.id}
               column={column}
-              onRename={(title) => setColumns((cols) => renameColumn(cols, column.id, title))}
-              onAdd={(card) => setColumns((cols) => addCard(cols, column.id, card))}
-              onDelete={(cardId) => setColumns((cols) => deleteCard(cols, cardId))}
+              onRename={(title) => update(renameColumn(columns, column.id, title))}
+              onAdd={(card) => update(addCard(columns, column.id, card))}
+              onDelete={(cardId) => update(deleteCard(columns, cardId))}
             />
           ))}
         </div>

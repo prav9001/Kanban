@@ -1,5 +1,7 @@
 export type Card = { id: string; title: string; details: string };
 export type Column = { id: string; title: string; cards: Card[] };
+export type Board = { id: string; name: string; columns: Column[]; updatedAt: number };
+export type BoardSummary = { id: string; name: string; cardCount: number; updatedAt: number };
 
 export const initialColumns: Column[] = [
   {
@@ -42,6 +44,12 @@ export const initialColumns: Column[] = [
   },
 ];
 
+export const DEFAULT_COLUMN_TITLES = ["Backlog", "To do", "In progress", "Review", "Done"];
+
+export function emptyColumns(): Column[] {
+  return DEFAULT_COLUMN_TITLES.map((title) => ({ id: crypto.randomUUID(), title, cards: [] }));
+}
+
 export function renameColumn(columns: Column[], columnId: string, title: string): Column[] {
   return columns.map((c) => (c.id === columnId ? { ...c, title } : c));
 }
@@ -65,18 +73,4 @@ export function moveCard(columns: Column[], cardId: string, toColumnId: string, 
     if (c.id === toColumnId) cards.splice(toIndex, 0, card);
     return { ...c, cards };
   });
-}
-
-const STORAGE_KEY = "kanban-board";
-
-export function loadColumns(): Column[] {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)!) ?? initialColumns;
-  } catch {
-    return initialColumns;
-  }
-}
-
-export function saveColumns(columns: Column[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(columns));
 }

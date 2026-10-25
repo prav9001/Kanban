@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addCard, deleteCard, findColumn, initialColumns, loadColumns, moveCard, renameColumn, saveColumns } from "./board";
+import { DEFAULT_COLUMN_TITLES, addCard, deleteCard, emptyColumns, findColumn, initialColumns, moveCard, renameColumn } from "./board";
 
 const ids = (cols = initialColumns, i = 0) => cols[i].cards.map((c) => c.id);
 
@@ -61,19 +61,12 @@ describe("moveCard", () => {
   });
 });
 
-describe("loadColumns / saveColumns", () => {
-  it("returns the dummy board when nothing is saved", () => {
-    expect(loadColumns()).toEqual(initialColumns);
-  });
-
-  it("returns the saved board", () => {
-    const cols = renameColumn(initialColumns, "col-done", "Shipped");
-    saveColumns(cols);
-    expect(loadColumns()).toEqual(cols);
-  });
-
-  it("falls back to the dummy board when saved data is corrupt", () => {
-    localStorage.setItem("kanban-board", "{bad");
-    expect(loadColumns()).toEqual(initialColumns);
+describe("emptyColumns", () => {
+  it("creates the five default columns with unique ids and no cards", () => {
+    const cols = emptyColumns();
+    expect(cols.map((c) => c.title)).toEqual(DEFAULT_COLUMN_TITLES);
+    expect(new Set(cols.map((c) => c.id)).size).toBe(5);
+    expect(cols.every((c) => c.cards.length === 0)).toBe(true);
+    expect(emptyColumns()[0].id).not.toBe(cols[0].id);
   });
 });

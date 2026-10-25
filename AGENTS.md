@@ -2,22 +2,23 @@
 
 ## Business Requirements
 
-- An MVP of a Kanban style Project Management application as a web app  
-- The web app should only have 1 board
-- The board has fixed 5 columns that can be renamed  
-- Each card has a title and details only
-- Drag and drop interface to move cards between columns
+The MVP (single board, local storage) has grown into a multi-user project management app.
+
+- Users sign up and sign in with email and password; each user only sees their own data
+- A user has many boards; boards can be created, renamed and deleted
+- A new account starts with one sample board populated with dummy data
+- Boards have columns that can be renamed; cards have a title and details
+- Drag and drop interface to move cards within and between columns
 - Add a new card to a column; delete an existing card
-- No more functionality: no archive, no search/filter. Keep it simple.
-- The priority is a slick, professional, gorgeous UI/UX with very simple features
-- The app should open with dummy data populated for the single board
+- The priority is a slick, professional, gorgeous UI/UX
+- New features are added incrementally; each one ships with unit, API and Playwright tests
 
 ## Technical Details
 
-- Implemented as a modern NextJS app, client rendered
-- The NextJS app should be created in a subdirectory `frontend`
-- Board state saved in browser local storage after every change
-- No user management for the MVP
+- A modern Next.js app in the subdirectory `frontend`; pages are client components that talk to Route Handlers under `/api`
+- Data is stored in SQLite via the built-in `node:sqlite` module (file set by `DATABASE_PATH`, default `frontend/data/kanban.db`)
+- Passwords hashed with scrypt; sessions are random tokens in an httpOnly cookie
+- Board changes are saved to the server after every change
 - Use popular libraries
 - As simple as possible but with an elegant UI
 

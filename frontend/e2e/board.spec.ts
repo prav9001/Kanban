@@ -1,26 +1,15 @@
-import { expect, test, type Locator, type Page } from "@playwright/test";
-
-const column = (page: Page, name: string) => page.getByRole("region", { name });
-const card = (page: Page, title: string) => page.getByTestId("card").filter({ hasText: title });
-
-async function drag(page: Page, source: Locator, target: Locator) {
-  const from = (await source.boundingBox())!;
-  const to = (await target.boundingBox())!;
-  await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
-  await page.mouse.down();
-  await page.mouse.move(from.x + from.width / 2 + 10, from.y + from.height / 2 + 10, { steps: 5 });
-  await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 20 });
-  await page.mouse.up();
-}
+import { expect, test } from "@playwright/test";
+import { card, cards, column, drag, openSampleBoard, signUp, waitForSave } from "./helpers";
 
 test.beforeEach(async ({ page }) => {
-  await page.goto("/");
+  await signUp(page);
+  await openSampleBoard(page);
 });
 
-test("loads the board with five columns and dummy cards", async ({ page }) => {
-  await expect(page.getByRole("heading", { name: "Launch board" })).toBeVisible();
-  await expect(page.getByTestId("column")).toHaveCount(5);
-  await expect(page.getByTestId("card")).toHaveCount(10);
+test("loads the sample board with five columns and dummy cards", async ({ page }) => {
+  await expect(page.getByRole("heading", { name: "Website relaunch" })).toBeVisible();
+  await expect(page.getByRole("region")).toHaveCount(5);
+  await expect(cards(page)).toHaveCount(10);
   for (const name of ["Backlog", "To do", "In progress", "Review", "Done"]) {
     await expect(column(page, name)).toBeVisible();
   }
@@ -140,6 +129,8 @@ test("keeps changes after a reload", async ({ page }) => {
   await todo.getByRole("button", { name: "+ Add card" }).click();
   await todo.getByLabel("Card title").fill("Saved card");
   await todo.getByRole("button", { name: "Add card", exact: true }).click();
+  await expect(todo).toContainText("Saved card");
+  await waitForSave(page);
 
   await page.reload();
 
@@ -147,5 +138,5 @@ test("keeps changes after a reload", async ({ page }) => {
   await expect(column(page, "Review")).toContainText("Write homepage copy");
   await expect(card(page, "Domain renewal")).toHaveCount(0);
   await expect(todo).toContainText("Saved card");
-  await expect(page.getByTestId("card")).toHaveCount(10);
+  await expect(cards(page)).toHaveCount(10);
 });
